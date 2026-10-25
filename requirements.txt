@@ -1,0 +1,36 @@
+# Core Web & API Framework
+Flask>=3.0.0
+Werkzeug>=3.0.0
+flask-cors>=4.0.0
+
+# Scientific Computing & Data Processing
+numpy>=1.24.0,<2.0.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+pandas>=2.1.0
+
+# Deep Learning Framework (CPU/CUDA compatible)
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Computer Vision & Image Processing
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+
+# Audio Processing & Feature Extraction
+soundfile>=0.12.1
+# librosa is optional for heavy spectral analysis; core audio pipeline uses scipy/soundfile/wave
+# librosa>=0.10.1
+
+# Document & OCR Processing
+pytesseract>=0.3.10
+pdfplumber>=0.10.0
+pypdf>=3.17.0
+
+# Security, Validation & Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Testing & Quality Assurance
+pytest>=7.4.0
+pytest-cov>=4.1.0

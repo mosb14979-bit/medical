@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Chatbot — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_chatbot">Chatbot</span>
+    </div>
+    <h1 class="page-title" data-i18n="mod_chatbot_title">Medical Chatbot</h1>
+    <p class="page-subtitle" data-i18n="chat_subtitle">
+      Retrieval-Augmented Generation (RAG) referencing MedlinePlus, WHO, and NHS. Transparent source citations with red-flag emergency screening.
+    </p>
+  </div>
+
+  <div class="chat-interface-layout">
+    <!-- Chat Stream Column -->
+    <div class="chat-main-column">
+      <div class="chat-messages-container" id="chatMessages" role="log" aria-live="polite">
+        <!-- Initial Welcome Message -->
+        <div class="chat-message assistant">
+          <div class="message-meta font-mono text-xs">AMA Assistant · Grounded Knowledge</div>
+          <div class="message-body" data-i18n="chat_welcome_msg">
+            Hello. I can help answer health-related educational questions, explain medical terminology, and summarize clinical guidelines from recognized public health bodies.
+            <br><br>
+            <em>Note: I do not provide individualized diagnoses, adjust prescription drugs, or replace a doctor's examination.</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Form -->
+      <form id="chatForm" class="chat-input-form">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="chatPromptInput" 
+            class="chat-text-input" 
+            placeholder="Ask a medical education question (e.g., normal blood pressure, HbA1c ranges, asthma triggers)..."
+            required
+            autocomplete="off"
+          />
+          <button type="submit" id="chatSubmitBtn" class="chat-send-btn" data-i18n="chat_send_btn">
+            Send Inquiry
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Sidebar: Suggested Queries & Medical Guardrails -->
+    <aside class="chat-sidebar">
+      <div class="sidebar-box">
+        <h3 class="sidebar-heading" data-i18n="chat_presets_title">Sample Inquiries</h3>
+        <ul class="preset-query-list">
+          <li>
+            <button type="button" class="preset-btn" data-query="What is considered a normal adult blood pressure reading?">
+              Adult Blood Pressure Normal Ranges
+            </button>
+          </li>
+          <li>
+            <button type="button" class="preset-btn" data-query="What are the diagnostic thresholds for Type 2 diabetes?">
+              Fasting Blood Sugar &amp; Type 2 Diabetes
+            </button>
+          </li>
+          <li>
+            <button type="button" class="preset-btn" data-query="What does a low hemoglobin count in a CBC indicate?">
+              Low Hemoglobin &amp; Complete Blood Count
+            </button>
+          </li>
+          <li>
+            <button type="button" class="preset-btn" data-query="What are common triggers for respiratory wheezing?">
+              Asthma Triggers &amp; Respiratory Wheezing
+            </button>
+          </li>
+          <li>
+            <button type="button" class="preset-btn" data-query="How does the ABCDE criteria help screen skin moles?">
+              ABCDE Skin Mole Screening Rule
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-box border-warning">
+        <h3 class="sidebar-heading text-warning" data-i18n="emergency_warning_title">Emergency Notice</h3>
+        <p class="text-xs text-muted" data-i18n="emergency_sidebar_text">
+          If you experience crushing chest pain, acute shortness of breath, loss of speech, or signs of stroke, stop using this application and call 911 / 999 / 112 immediately.
+        </p>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatPromptInput');
+  const chatMessages = document.getElementById('chatMessages');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      chatInput.value = btn.dataset.query;
+      chatInput.focus();
+    });
+  });
+
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const prompt = chatInput.value.trim();
+    if (!prompt) return;
+
+    // Append user message
+    const userDiv = document.createElement('div');
+    userDiv.className = 'chat-message user';
+    userDiv.innerHTML = `<div class="message-meta font-mono text-xs">You</div><div class="message-body">${escapeHtml(prompt)}</div>`;
+    chatMessages.appendChild(userDiv);
+    chatInput.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Append loading state
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-message assistant';
+    loadingDiv.innerHTML = `<div class="message-meta font-mono text-xs">AMA Assistant</div><div class="message-body text-muted">Retrieving verified clinical evidence...</div>`;
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+      const lang = document.documentElement.lang || 'en';
+      const res = await fetch('/api/chatbot/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, language: lang })
+      });
+
+      const data = await res.json();
+      loadingDiv.remove();
+
+      const assistantDiv = document.createElement('div');
+      assistantDiv.className = `chat-message assistant ${data.emergency ? 'emergency-response' : ''}`;
+      
+      let citationsHtml = '';
+      if (data.citations && data.citations.length > 0) {
+        citationsHtml = '<div class="citations-container"><div class="citations-title font-mono text-xs">VERIFIED SOURCES:</div>';
+        data.citations.forEach(c => {
+          citationsHtml += `<div class="citation-badge"><a href="${c.url}" target="_blank" rel="noopener noreferrer">${c.publisher}: ${c.title}</a></div>`;
+        });
+        citationsHtml += '</div>';
+      }
+
+      assistantDiv.innerHTML = `
+        <div class="message-meta font-mono text-xs">AMA Assistant · Grounded Evidence</div>
+        <div class="message-body">${data.response.replace(/\n/g, '<br>')}</div>
+        ${citationsHtml}
+      `;
+      chatMessages.appendChild(assistantDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (err) {
+      loadingDiv.remove();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'chat-message assistant error';
+      errDiv.innerHTML = `<div class="message-body text-danger">Connection error. Please verify the Flask server is running on http://127.0.0.1:5000</div>`;
+      chatMessages.appendChild(errDiv);
+    }
+  });
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+{% endblock %}

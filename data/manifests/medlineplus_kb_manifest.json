@@ -1,0 +1,70 @@
+{
+  "manifest_name": "Curated Clinical Knowledge Catalog (RAG)",
+  "version": "1.2.0",
+  "publishers": ["MedlinePlus (US NLM)", "World Health Organization (WHO)", "NHS Health A to Z (UK)"],
+  "license": "Public Domain / Open Health Information Guidance",
+  "topics": [
+    {
+      "id": "hypertension",
+      "title_en": "High Blood Pressure (Hypertension)",
+      "title_ar": "ارتفاع ضغط الدم (فرط ضغط الدم)",
+      "publisher": "MedlinePlus",
+      "url": "https://medlineplus.gov/highbloodpressure.html",
+      "content_en": "High blood pressure is a common condition where long-term force of blood against artery walls is high enough to cause health problems like heart disease. Normal adult blood pressure is generally under 120/80 mmHg. Elevated is 120-129 systolic with <80 diastolic. Stage 1 hypertension is 130-139 systolic or 80-89 diastolic. Lifestyle modifications include reducing sodium, regular aerobic exercise, stress reduction, and avoiding tobacco.",
+      "content_ar": "ارتفاع ضغط الدم حالة شائعة حيث تكون قوة تدفق الدم طويلة الأمد على جدران الشرايين مرتفعة بما يكفي للتسبب في مشاكل صحية مثل أمراض القلب. ضغط الدم الطبيعي للبالغين أقل من 120/80 ملم زئبق. يشمل تعديل نمط الحياة تقليل الصوديوم، وممارسة التمارين الرياضية بانتظام، وخفض التوتر، وتجنب التدخين.",
+      "keywords": ["blood pressure", "hypertension", "120/80", "systolic", "diastolic", "ضغط الدم", "فرط ضغط الدم"]
+    },
+    {
+      "id": "diabetes_type2",
+      "title_en": "Type 2 Diabetes Mellitus",
+      "title_ar": "داء السكري من النوع الثاني",
+      "publisher": "World Health Organization (WHO)",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/diabetes",
+      "content_en": "Type 2 diabetes affects how your body uses glucose. Fasting blood glucose >= 126 mg/dL (7.0 mmol/L) on two separate tests or HbA1c >= 6.5% indicates diabetes. Pre-diabetes is defined as fasting glucose 100-125 mg/dL. Symptoms include increased thirst, frequent urination, fatigue, and blurry vision. Regular monitoring, balanced low-glycemic nutrition, and clinical oversight are critical.",
+      "content_ar": "يؤثر السكري من النوع الثاني على كيفية استخدام الجسم للجلوكوز. يعتبر سكر الدم الصائم 126 ملغ/ديسيلتر أو أعلى أو الهيموغلوبين السكري HbA1c 6.5% أو أعلى مؤشراً على الإصابة. تتضمن الأعراض العطش الشديد، وكثرة التبول، والإرهاق، وضبابية الرؤية.",
+      "keywords": ["diabetes", "glucose", "hba1c", "blood sugar", "insulin", "السكري", "سكر الدم", "الأنسولين"]
+    },
+    {
+      "id": "cbc_hemoglobin",
+      "title_en": "Complete Blood Count (CBC) & Hemoglobin",
+      "title_ar": "تعداد الدم الكامل (CBC) والهيموغلوبين",
+      "publisher": "MedlinePlus",
+      "url": "https://medlineplus.gov/lab-tests/complete-blood-count/",
+      "content_en": "A CBC measures several components of blood. Normal adult male hemoglobin typically spans 13.8 to 17.2 g/dL; adult female spans 12.1 to 15.1 g/dL. Low hemoglobin suggests anemia or blood loss, whereas elevated levels may indicate polycythemia or dehydration. White blood cell count (WBC) normal range is generally 4,500 to 11,000 cells/mcL.",
+      "content_ar": "يقيس فحص تعداد الدم الكامل (CBC) عدة مكونات للدم. يتراوح الهيموغلوبين الطبيعي للذكور البالغين عادة بين 13.8 و17.2 غ/ديسيلتر، وللإناث بين 12.1 و15.1 غ/ديسيلتر. يشير انخفاض الهيموغلوبين إلى فقر الدم (الأنيميا)، بينما قد يشير ارتفاعه إلى الجفاف أو كثرة الحمر. يبلغ المعدل الطبيعي لكريات الدم البيضاء 4,500 إلى 11,000 خلية/مكرو لتر.",
+      "keywords": ["cbc", "hemoglobin", "wbc", "rbc", "platelets", "anemia", "تعداد الدم", "الهيموغلوبين", "كريات الدم", "فقر الدم"]
+    },
+    {
+      "id": "asthma_respiratory",
+      "title_en": "Asthma and Respiratory Wheezing",
+      "title_ar": "الربو والصفير التنفسي",
+      "publisher": "NHS Health A to Z",
+      "url": "https://www.nhs.uk/conditions/asthma/",
+      "content_en": "Asthma is a chronic condition causing inflammation and narrowing of the airways. Wheezing is a continuous high-pitched whistling sound during breathing, particularly expiration. Common triggers include pollen, cold air, dust mites, exercise, and respiratory infections. While wheezing is common in asthma, clinical diagnosis requires pulmonary function tests such as spirometry.",
+      "content_ar": "الربو حالة مزمنة تسبب التهاب وتضيق المسالك الهوائية. الصفير هو صوت صفير مستمر عالي النبرة أثناء التنفس وخصوصاً أثناء الزفير. من المحفزات الشائعة حبوب اللقاح، والهواء البارد، وغبار المنزل، والتمارين. يتطلب التشخيص السريري اختبارات وظائف الرئة مثل قياس التنفس.",
+      "keywords": ["asthma", "wheeze", "wheezing", "inhaler", "shortness of breath", "الربو", "الصفير", "ضيق التنفس"]
+    },
+    {
+      "id": "skin_mole_abcde",
+      "title_en": "Skin Lesion Screening & ABCDE Criteria",
+      "title_ar": "فحص الآفات الجلدية ومعايير ABCDE",
+      "publisher": "MedlinePlus",
+      "url": "https://medlineplus.gov/skincancer.html",
+      "content_en": "The ABCDE rule guides dermatological evaluation: A = Asymmetry (one half doesn't match the other); B = Border irregularity (scalloped or poorly defined); C = Color variation (shades of brown, black, red, or blue); D = Diameter (>6 mm); E = Evolving (changing size, shape, or color). Suspicious lesions require in-person examination by a dermatologist using dermoscopy and biopsy.",
+      "content_ar": "تساعد قاعدة ABCDE في تقييم الشامات والآفات الجلدية: A = عدم التناظر؛ B = عدم انتظام الحواف؛ C = تباين الألوان؛ D = القطر أكبر من 6 ملم؛ E = التطور والتغير في الحجم أو اللون. تتطلب الآفات المشبوهة فحصاً سريرياً من قبل طبيب جلدية مختص باستخدام المنظار الجلدي وخزعة نسيجية.",
+      "keywords": ["mole", "skin lesion", "melanoma", "abcde", "dermoscopy", "شامة", "آفة جلدية", "الميلانوما", "فحص الجلد"]
+    }
+  ],
+  "emergency_triggers": [
+    {
+      "pattern": "(chest pain|crushing pain|pressure in chest|radiating to arm|ألم في الصدر|ألم شديد في الصدر)",
+      "warning_en": "EMERGENCY ALERT: Severe or crushing chest pain radiating to the jaw, neck, or arm can be a symptom of acute myocardial infarction (heart attack). Immediately call 911 (US), 999 (UK), 112 (EU), or your local emergency dispatch.",
+      "warning_ar": "تنبيه طوارئ: ألم الصدر الشديد أو الضاغط الذي يمتد إلى الذراع أو الفك قد يكون علامة على نوبة قلبية حادة. يرجى الاتصال فوراً بخدمات الإسعاف والطوارئ المحلية دون أي تأخير."
+    },
+    {
+      "pattern": "(cannot breathe|choking|severe shortness of breath|blue lips|لا أستطيع التنفس|اختناق|ازرقاق الشفاه)",
+      "warning_en": "EMERGENCY ALERT: Acute inability to breathe, severe respiratory distress, or cyanosis (blue discoloration of lips/fingers) requires immediate emergency medical resuscitation.",
+      "warning_ar": "تنبيه طوارئ: عدم القدرة المفاجئة على التنفس أو ضيق التنفس الشديد أو ازرقاق الشفاه يستدعي تدخلاً إسعافياً فورياً."
+    }
+  ]
+}

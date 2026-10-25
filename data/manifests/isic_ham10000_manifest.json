@@ -1,0 +1,57 @@
+{
+  "dataset_name": "HAM10000 (Human Against Machine with 10000 training images)",
+  "isic_challenge": "ISIC 2018 Task 3",
+  "version": "1.0.0",
+  "source_url": "https://doi.org/10.7910/DVN/DBW86T",
+  "publisher": "Harvard Dataverse / ViDIR Group, Medical University of Vienna",
+  "license": "CC BY-NC 4.0",
+  "total_samples": 10015,
+  "modality": "Dermoscopy",
+  "classes": {
+    "akiec": {
+      "full_name": "Actinic keratoses and intraepithelial carcinoma",
+      "count": 327,
+      "risk_tier": "High"
+    },
+    "bcc": {
+      "full_name": "Basal cell carcinoma",
+      "count": 514,
+      "risk_tier": "High"
+    },
+    "bkl": {
+      "full_name": "Benign keratosis-like lesions (solar lentigines / seborrheic keratoses)",
+      "count": 1099,
+      "risk_tier": "Low"
+    },
+    "df": {
+      "full_name": "Dermatofibroma",
+      "count": 115,
+      "risk_tier": "Low"
+    },
+    "mel": {
+      "full_name": "Melanoma",
+      "count": 1113,
+      "risk_tier": "Critical"
+    },
+    "nv": {
+      "full_name": "Melanocytic nevi",
+      "count": 6705,
+      "risk_tier": "Low"
+    },
+    "vasc": {
+      "full_name": "Vascular lesions",
+      "count": 142,
+      "risk_tier": "Medium"
+    }
+  },
+  "preprocessing": {
+    "target_resolution": [224, 224],
+    "mean": [0.485, 0.456, 0.406],
+    "std": [0.229, 0.224, 0.225]
+  },
+  "known_limitations": [
+    "Heavily imbalanced in favor of melanocytic nevi (67%).",
+    "Derived from Caucasian cohorts; lack of validated representation across Fitzpatrick IV-VI skin types.",
+    "Valid only on dermatoscopic lens imaging; uncalibrated smartphone camera photos exhibit severe domain shift."
+  ]
+}

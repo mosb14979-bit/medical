@@ -1,0 +1,41 @@
+{
+  "registry_version": "1.1.0",
+  "updated_at": "2026-10-24",
+  "models": {
+    "skin_lesion_classifier": {
+      "name": "HAM10000 Skin Lesion Deep Classifier",
+      "architecture": "Custom EfficientNet-B0 with 7-class Linear Classifier Head",
+      "modality": "Dermatoscopic Image (RGB 224x224)",
+      "target_classes": ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"],
+      "weights_file": "model_artifacts/weights/skin_efficientnet_b0.pth",
+      "expected_sha256": "8f3b49e8a092b15e3474d209148d88e63a3d6cb48809a89d1ec9c79294723049",
+      "status": "ready_for_weights",
+      "fallback_mode": "Calibrated Heuristic Color-Geometry Classifier",
+      "device_support": ["cpu", "cuda", "directml"]
+    },
+    "respiratory_classifier": {
+      "name": "ICBHI-2017 Auscultation Spectrogram Classifier",
+      "architecture": "2D Spectrogram CNN (4 Conv2D blocks + AdaptiveAvgPool2d + Dropout)",
+      "modality": "Log-Mel Spectrogram (128x128)",
+      "target_classes": ["normal", "wheeze", "crackle", "wheeze_crackle", "stridor"],
+      "weights_file": "model_artifacts/weights/resp_cnn_128.pth",
+      "expected_sha256": "4b7a11956f7ef57d9f7e8a93910c2836d5a109ec9128f731db87aa854a88bc39",
+      "status": "ready_for_weights",
+      "fallback_mode": "Spectral Peak & Temporal Variance Heuristic",
+      "device_support": ["cpu", "cuda"]
+    },
+    "lab_ocr_engine": {
+      "name": "Tesseract OCR Engine + Medical Regex Parser",
+      "architecture": "LSTM Sequence Recurrent Recognizer v5.x",
+      "supported_languages": ["eng", "ara"],
+      "status": "system_dependent",
+      "fallback_mode": "Digital PDF Text Extraction & Synthetic Lab Parser"
+    },
+    "rag_chatbot_engine": {
+      "name": "MedlinePlus / WHO Grounded Medical Retrieval Engine",
+      "architecture": "BM25 Lexical + Cosine Semantic Ranking with Emergency Triage Filter",
+      "status": "operational",
+      "offline_knowledge_records": 5
+    }
+  }
+}

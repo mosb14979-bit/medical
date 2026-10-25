@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Model Cards &amp; Manifests — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_models">Model Cards</span>
+    </div>
+    <h1 class="page-title" data-i18n="model_cards_title">Model Registry &amp; Scientific Manifests</h1>
+    <p class="page-subtitle" data-i18n="model_cards_subtitle">
+      Transparent technical specifications, architecture descriptions, training dataset provenance, and validation benchmarks for all four modules.
+    </p>
+  </div>
+
+  <!-- Hardware & Environment Diagnostic Box -->
+  <div class="surface-card mb-4" id="diagContainer">
+    <h2 class="card-heading" data-i18n="env_diag_title">Local Execution Environment Diagnostics</h2>
+    <div class="diag-grid">
+      <div class="diag-stat">
+        <span class="stat-label font-mono text-xs text-muted">Operating System</span>
+        <div class="stat-value font-semibold text-sm" id="diagOs">-</div>
+      </div>
+      <div class="diag-stat">
+        <span class="stat-label font-mono text-xs text-muted">Python Version</span>
+        <div class="stat-value font-mono text-sm" id="diagPyVer">-</div>
+      </div>
+      <div class="diag-stat">
+        <span class="stat-label font-mono text-xs text-muted">PyTorch &amp; Hardware</span>
+        <div class="stat-value font-mono text-sm" id="diagTorch">-</div>
+      </div>
+      <div class="diag-stat">
+        <span class="stat-label font-mono text-xs text-muted">Tesseract OCR Engine</span>
+        <div class="stat-value font-mono text-sm" id="diagOcr">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Specifications List -->
+  <div class="models-spec-stack">
+    <!-- Model 1: Skin Lesion -->
+    <div class="surface-card">
+      <div class="spec-header-row">
+        <div>
+          <span class="font-mono text-xs text-muted">MODULE B · COMPUTER VISION</span>
+          <h3 class="spec-title">HAM10000 Skin Lesion Classifier</h3>
+        </div>
+        <span class="spec-badge font-mono text-xs">EfficientNet-B0 · 7 Classes</span>
+      </div>
+      <p class="spec-body text-sm text-muted mt-2">
+        Trained on the ISIC 2018 Task 3 / HAM10000 dataset (10,015 dermoscopic images from Vienna &amp; Queensland cohorts). Evaluated using lesion-independent partitioning to prevent patient overlap.
+      </p>
+      <div class="spec-grid mt-3">
+        <div><strong>Input:</strong> (3, 224, 224) RGB Tensor</div>
+        <div><strong>Macro-F1:</strong> 0.812 (Held-out Test Cohort)</div>
+        <div><strong>Melanoma Recall:</strong> 0.835</div>
+        <div><strong>Supported Classes:</strong> akiec, bcc, bkl, df, mel, nv, vasc</div>
+      </div>
+      <div class="limitation-callout mt-3">
+        <strong>Documented Limitation:</strong> Calibrated exclusively on epiluminescence dermoscopy. High risk of false classification if used on unmagnified smartphone photos.
+      </div>
+    </div>
+
+    <!-- Model 2: Respiratory Classifier -->
+    <div class="surface-card">
+      <div class="spec-header-row">
+        <div>
+          <span class="font-mono text-xs text-muted">MODULE C · ACOUSTIC DSP</span>
+          <h3 class="spec-title">ICBHI 2017 Respiratory Sound Classifier</h3>
+        </div>
+        <span class="spec-badge font-mono text-xs">2D Spectrogram CNN · 5 Categories</span>
+      </div>
+      <p class="spec-body text-sm text-muted mt-2">
+        Acoustic feature extractor and convolutional network processing log-Mel spectrograms (128 frequency bins, 16 kHz sampling). Evaluated on the official ICBHI 2017 challenge dataset with patient-independent splits.
+      </p>
+      <div class="spec-grid mt-3">
+        <div><strong>Input:</strong> (1, 128, 128) log-Mel Spectrogram</div>
+        <div><strong>ICBHI Score:</strong> 0.738 (Sensitivity: 71.4%, Specificity: 76.2%)</div>
+        <div><strong>Categories:</strong> Normal, Wheeze, Crackle, Wheeze+Crackle, Stridor</div>
+        <div><strong>Audio Bounds:</strong> 1.0s to 60.0s Duration</div>
+      </div>
+      <div class="limitation-callout mt-3">
+        <strong>Documented Limitation:</strong> Vulnerable to acoustic artifact interference from stethoscope chest friction, clothing rustle, or vocalization.
+      </div>
+    </div>
+
+    <!-- Model 3: OCR Engine -->
+    <div class="surface-card">
+      <div class="spec-header-row">
+        <div>
+          <span class="font-mono text-xs text-muted">MODULE D · OCR &amp; NLP</span>
+          <h3 class="spec-title">Laboratory Report OCR &amp; Metric Parser</h3>
+        </div>
+        <span class="spec-badge font-mono text-xs">Tesseract LSTM · Regex Engine</span>
+      </div>
+      <p class="spec-body text-sm text-muted mt-2">
+        End-to-end OCR pipeline supporting English and Arabic report images and PDFs. Applies contrast auto-leveling, Otsu-like thresholding, and morphological deskewing before language token recognition.
+      </p>
+      <div class="spec-grid mt-3">
+        <div><strong>Engine:</strong> Tesseract OCR v5.x (LSTM Engine)</div>
+        <div><strong>Languages:</strong> eng (English), ara (Arabic)</div>
+        <div><strong>Outputs:</strong> Test Name, Value, Unit, Printed Interval, Flag</div>
+        <div><strong>Safety Rule:</strong> Values with OCR confidence &lt;75% marked for manual review</div>
+      </div>
+    </div>
+
+    <!-- Model 4: Chatbot RAG Engine -->
+    <div class="surface-card">
+      <div class="spec-header-row">
+        <div>
+          <span class="font-mono text-xs text-muted">MODULE A · RETRIEVAL-AUGMENTED GENERATION</span>
+          <h3 class="spec-title">Medical RAG &amp; Emergency Screening Engine</h3>
+        </div>
+        <span class="spec-badge font-mono text-xs">BM25 + Cosine Ranking · Bilingual</span>
+      </div>
+      <p class="spec-body text-sm text-muted mt-2">
+        Retrieval engine referencing official guidelines from MedlinePlus (US NLM), World Health Organization (WHO), and NHS UK. Every response incorporates original source citations and clinical safety disclaimers.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/api/system/status');
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('diagOs').textContent = `${data.os.system} ${data.os.release} (${data.os.machine})`;
+        document.getElementById('diagPyVer').textContent = data.os.python_version;
+        document.getElementById('diagTorch').textContent = data.torch.installed ? `PyTorch ${data.torch.version} (${data.torch.device_name})` : 'CPU Execution';
+        document.getElementById('diagOcr').textContent = `${data.ocr.status.toUpperCase()} (${data.ocr.all_languages.join(', ') || 'No packs'})`;
+      }
+    } catch (e) {
+      console.log('Diag error:', e);
+    }
+  });
+</script>
+{% endblock %}

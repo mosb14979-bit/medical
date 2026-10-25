@@ -1,0 +1,38 @@
+{
+  "dataset_name": "ICBHI 2017 Respiratory Sound Database",
+  "version": "1.0.0",
+  "source_url": "https://bhichallenge.med.auth.gr/",
+  "publisher": "Aristotle University of Thessaloniki & University of Coimbra",
+  "license": "Open Access for Academic Research (with citation)",
+  "total_recordings": 920,
+  "total_patients": 126,
+  "total_duration_hours": 5.5,
+  "modality": "Auscultation Audio (.wav)",
+  "sampling_rates": [4000, 10000, 44100],
+  "supported_categories": {
+    "normal": {
+      "name": "Normal Vesicular Sounds",
+      "description": "Unremarkable breath sounds without adventitious acoustic signatures."
+    },
+    "wheeze": {
+      "name": "Wheezes",
+      "description": "Continuous, high-pitched musical sounds produced by narrowed airways."
+    },
+    "crackle": {
+      "name": "Crackles (Rales)",
+      "description": "Discontinuous, explosive, brief clicking or rattling sounds."
+    },
+    "wheeze_crackle": {
+      "name": "Wheeze + Crackle Co-occurrence",
+      "description": "Simultaneous adventitious presence of wheezing and crackling."
+    },
+    "stridor": {
+      "name": "Stridor",
+      "description": "Harsh, vibrating, high-pitched inspiratory sound indicating laryngeal obstruction."
+    }
+  },
+  "recommended_split": {
+    "methodology": "Patient-Independent (Patient IDs 101-180 in train, 181-226 in test)",
+    "leakage_prevention": "Strictly forbids recordings from the same patient across splits."
+  }
+}

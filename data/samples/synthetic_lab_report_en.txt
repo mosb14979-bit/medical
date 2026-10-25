@@ -1,0 +1,25 @@
+================================================================================
+                    METROPOLITAN CLINICAL LABORATORY
+                      SYNTHETIC TEST REPORT - RESEARCH USE
+================================================================================
+PATIENT ID: SYNTH-99420          DATE: 2026-10-24
+SPECIMEN: WHOLE BLOOD (EDTA)     STATUS: VERIFIED
+--------------------------------------------------------------------------------
+TEST NAME                 RESULT      UNITS       REFERENCE INTERVAL    FLAG
+--------------------------------------------------------------------------------
+Hemoglobin                14.2        g/dL        13.5 - 17.5           NORMAL
+Hematocrit                42.0        %           38.8 - 50.0           NORMAL
+White Blood Cell (WBC)    7.4         10^3/uL     4.5 - 11.0            NORMAL
+Platelet Count            245         10^3/uL     150 - 450             NORMAL
+Fasting Glucose           112         mg/dL       70 - 99               HIGH
+Creatinine                0.95        mg/dL       0.70 - 1.30           NORMAL
+Total Cholesterol         215         mg/dL       < 200                 HIGH
+HDL Cholesterol           48          mg/dL       > 40                  NORMAL
+LDL Cholesterol           138         mg/dL       < 100                 HIGH
+Triglycerides             165         mg/dL       < 150                 HIGH
+TSH (Thyroid Stim.)       2.1         uIU/mL      0.40 - 4.00           NORMAL
+Alanine Aminotransferase  28          U/L         10 - 40               NORMAL
+================================================================================
+NOTICE: This is an artificially generated synthetic test record for OCR pipeline
+validation. It contains NO private health information (PHI) or real patient data.
+================================================================================

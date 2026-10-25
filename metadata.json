@@ -1,0 +1,6 @@
+{
+  "name": "AI Medical Assistant (AMA)",
+  "description": "Bilingual, local-first medical information and research platform featuring Medical Chatbot, Skin Image Analyzer, Respiratory Sound Analyzer, and Laboratory Report OCR with Windows 11 deployment bundle.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,34 @@
+{
+  "samples": [
+    {
+      "id": "resp_sample_01",
+      "sound_class": "wheeze",
+      "title_en": "Bilateral Expiratory Wheeze (Synthetic Prototype)",
+      "title_ar": "صفير زفيري ثنائي الجانب (نموذج اصطناعي)",
+      "duration_sec": 8.0,
+      "dominant_freq_hz": 420.0,
+      "clinical_note_en": "High-pitched musical polyphonic sound predominant in mid-to-late expiration.",
+      "clinical_note_ar": "صوت صفير موسيقي عالي النبرة وبارز في مرحلة الزفير."
+    },
+    {
+      "id": "resp_sample_02",
+      "sound_class": "crackle",
+      "title_en": "Fine Inspiratory Crackles (Synthetic Prototype)",
+      "title_ar": "خرخرة شهيقية ناعمة (نموذج اصطناعي)",
+      "duration_sec": 6.5,
+      "dominant_freq_hz": 850.0,
+      "clinical_note_en": "Brief, explosive, discontinuous clicking sounds audible in late inspiration.",
+      "clinical_note_ar": "أصوات طقطقة متقطعة وانفجارية قصيرة مسموعة في نهاية مرحلة الشهيق."
+    },
+    {
+      "id": "resp_sample_03",
+      "sound_class": "normal",
+      "title_en": "Normal Vesicular Breath Sounds",
+      "title_ar": "أصوات تنفس حويصلية طبيعية",
+      "duration_sec": 10.0,
+      "dominant_freq_hz": 180.0,
+      "clinical_note_en": "Gentle, rustling breath sounds without adventitious or musical components.",
+      "clinical_note_ar": "أصوات تنفس هادئة بدون أي صفير أو فرقعة غير طبيعية."
+    }
+  ]
+}

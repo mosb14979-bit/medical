@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis History &amp; Privacy — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_history">History &amp; Privacy</span>
+    </div>
+    <div class="flex-between">
+      <div>
+        <h1 class="page-title" data-i18n="history_title">Analysis History &amp; Local Privacy</h1>
+        <p class="page-subtitle" data-i18n="history_subtitle">
+          All records are stored exclusively in your local SQLite database (ama_local.sqlite). You can delete single entries or purge all data at any time.
+        </p>
+      </div>
+      <div>
+        <button type="button" id="clearAllHistoryBtn" class="btn-danger" data-i18n="btn_purge_all">
+          Purge All History Records
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="surface-card mt-4">
+    <div class="history-table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="col_timestamp">Timestamp</th>
+            <th data-i18n="col_module">Module</th>
+            <th data-i18n="col_summary">Input Summary</th>
+            <th data-i18n="col_finding">Primary Finding</th>
+            <th data-i18n="col_conf">Confidence</th>
+            <th data-i18n="col_action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <div id="historyEmpty" class="empty-state-placeholder">
+      <p class="text-muted" data-i18n="history_empty">No analysis records currently stored in your local SQLite database.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const historyTableBody = document.getElementById('historyTableBody');
+  const historyEmpty = document.getElementById('historyEmpty');
+  const clearAllBtn = document.getElementById('clearAllHistoryBtn');
+
+  async function loadHistory() {
+    try {
+      const res = await fetch('/api/history');
+      const rows = await res.json();
+      historyTableBody.innerHTML = '';
+
+      if (!rows || rows.length === 0) {
+        historyEmpty.classList.remove('hidden');
+        return;
+      }
+
+      historyEmpty.classList.add('hidden');
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-xs text-muted whitespace-nowrap">${r.timestamp || '-'}</td>
+          <td class="font-mono text-xs uppercase">${r.module}</td>
+          <td class="text-xs truncate max-w-xs">${escapeHtml(r.input_summary || '-')}</td>
+          <td class="font-semibold text-xs">${escapeHtml(r.primary_finding || '-')}</td>
+          <td class="font-mono tabular-nums text-xs">${r.confidence ? r.confidence + '%' : '-'}</td>
+          <td>
+            <button class="btn-delete-row text-xs text-danger font-medium" data-id="${r.id}">Delete</button>
+          </td>
+        `;
+        historyTableBody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.btn-delete-row').forEach(b => {
+        b.addEventListener('click', async () => {
+          const id = b.dataset.id;
+          await fetch(`/api/history/delete/${id}`, { method: 'POST' });
+          loadHistory();
+        });
+      });
+    } catch (e) {
+      console.log('History load error:', e);
+    }
+  }
+
+  clearAllBtn.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to permanently delete all local analysis and chat records? This operation cannot be undone.')) {
+      await fetch('/api/history/clear', { method: 'POST' });
+      loadHistory();
+    }
+  });
+
+  function escapeHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+{% endblock %}

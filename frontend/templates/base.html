@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}AI Medical Assistant (AMA){% endblock %}</title>
+  <meta name="description" content="Bilingual, local-first medical information and research platform." />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-canvas text-primary antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Top Bar Contract: [Brand Wordmark] — [Nav Links] — [Language Toggle] -->
+  <header class="top-nav-bar">
+    <div class="nav-container">
+      <a href="/" class="brand-wordmark">
+        <span>AI Medical Assistant</span>
+      </a>
+
+      <nav class="nav-links" id="mainNav">
+        <a href="/" class="nav-link" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="/chatbot" class="nav-link" data-i18n="nav_chatbot">Chatbot</a>
+        <a href="/skin-analyzer" class="nav-link" data-i18n="nav_skin">Skin Lesions</a>
+        <a href="/respiratory-analyzer" class="nav-link" data-i18n="nav_resp">Respiratory</a>
+        <a href="/lab-analyzer" class="nav-link" data-i18n="nav_lab">Lab Reports</a>
+        <a href="/history" class="nav-link" data-i18n="nav_history">History</a>
+        <a href="/model-info" class="nav-link" data-i18n="nav_models">Model Cards</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="langToggleBtn" class="lang-btn" type="button" aria-label="Toggle Language Arabic / English">
+          <span id="currentLangLabel">العربية</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Non-Diagnostic Clinical Safety Banner -->
+  <section class="safety-ribbon" role="alert">
+    <div class="ribbon-container">
+      <span class="ribbon-badge" data-i18n="disclaimer_badge">RESEARCH &amp; EDUCATION</span>
+      <p class="ribbon-text" data-i18n="disclaimer_text">
+        AMA is not a diagnostic device. It does not prescribe medications or replace clinical evaluation. If experiencing acute chest pain, severe shortness of breath, or emergency symptoms, contact local emergency dispatch (911 / 999 / 112) immediately.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content Viewport -->
+  <main class="main-content flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Clean Editorial Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="footer-brand">AI Medical Assistant (AMA)</div>
+        <p class="footer-subtext" data-i18n="footer_subtext">
+          Bilingual local-first research platform. Zero external cloud telemetry. Running on local SQLite and PyTorch inference pipelines.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/model-info" data-i18n="footer_model_cards">Model Registry</a>
+        <span class="sep">·</span>
+        <a href="/history" data-i18n="footer_privacy">Privacy &amp; Data Purging</a>
+        <span class="sep">·</span>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

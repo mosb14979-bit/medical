@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Respiratory Sound Analyzer — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_resp">Respiratory</span>
+    </div>
+    <h1 class="page-title" data-i18n="mod_resp_title">Respiratory Sound Analyzer</h1>
+    <p class="page-subtitle" data-i18n="resp_subtitle">
+      Auscultation sound classification based on the ICBHI 2017 challenge standard. Extracts spectral acoustic features and classifies adventitious sounds.
+    </p>
+  </div>
+
+  <div class="analyzer-two-col-grid">
+    <!-- Left: Audio Upload & Player -->
+    <div class="surface-card">
+      <h2 class="card-heading" data-i18n="resp_upload_heading">Auscultation Audio Recording</h2>
+      <p class="card-subtext" data-i18n="resp_upload_subtext">
+        Upload a digital stethoscope recording or chest microphone sound file (.wav, .mp3, duration 1.0s to 60.0s).
+      </p>
+
+      <form id="respUploadForm" class="upload-zone-form">
+        <div class="drop-zone" id="audioDropZone">
+          <input type="file" id="audioFileInput" accept="audio/wav,audio/mp3,audio/mpeg" class="file-input-hidden" />
+          <div class="drop-zone-content">
+            <span class="drop-icon">🎧</span>
+            <strong data-i18n="drop_audio_prompt">Click to select or drop audio recording</strong>
+            <span class="file-specs font-mono text-xs text-muted">WAV, MP3 · Duration 1.0s – 60.0s</span>
+          </div>
+        </div>
+
+        <div id="audioPlayerContainer" class="audio-player-wrapper hidden">
+          <audio id="audioPlayer" controls class="w-full mt-3"></audio>
+          <div class="preview-actions mt-3">
+            <button type="button" id="clearAudioBtn" class="btn-secondary" data-i18n="btn_clear_audio">Remove Audio</button>
+            <button type="submit" id="analyzeAudioBtn" class="btn-primary" data-i18n="btn_run_audio_analysis">Execute Sound Analysis</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Pre-loaded Synthetic Respiratory Samples -->
+      <div class="sample-picker-strip">
+        <span class="picker-label font-mono text-xs" data-i18n="sample_audio_picker">Or load synthetic auscultation prototype:</span>
+        <div class="sample-btns-row">
+          <button type="button" class="btn-sample" id="loadSampleWheeze">Wheeze Prototype (420 Hz)</button>
+          <button type="button" class="btn-sample" id="loadSampleCrackle">Crackle Prototype (Bursts)</button>
+          <button type="button" class="btn-sample" id="loadSampleNormal">Normal Vesicular</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Spectral Results Card -->
+    <div class="surface-card" id="respResultsCard">
+      <h2 class="card-heading" data-i18n="resp_results_heading">Acoustic Classification &amp; Spectrogram</h2>
+
+      <div id="respResultsEmpty" class="empty-state-placeholder">
+        <p class="text-muted" data-i18n="resp_empty_state">Submit an auscultation recording to compute log-Mel spectral features and ICBHI category.</p>
+      </div>
+
+      <div id="respLoading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p class="text-muted" data-i18n="resp_analyzing">Computing FFT frequency spectrum &amp; adventitious sound metrics...</p>
+      </div>
+
+      <div id="respResultsContent" class="results-data-wrapper hidden">
+        <!-- Primary Sound Category -->
+        <div class="primary-result-box">
+          <div class="result-top-row">
+            <div>
+              <span class="font-mono text-xs text-muted" data-i18n="detected_category_label">DETECTED SOUND CATEGORY:</span>
+              <h3 class="primary-title" id="respPrimaryTitle">-</h3>
+            </div>
+            <div class="confidence-badge">
+              <span class="conf-num font-mono" id="respConfidence">-</span>%
+            </div>
+          </div>
+          <p class="result-description" id="respDescription">-</p>
+        </div>
+
+        <!-- Spectrogram Visual Frequency Waterfall / Bar Strip -->
+        <div class="spectrogram-section">
+          <div class="section-title-row">
+            <span class="font-mono text-xs uppercase" data-i18n="spectrogram_title">20-Band Spectral Distribution (Hz)</span>
+            <span class="font-mono text-xs text-muted" id="dominantFreqLabel">-</span>
+          </div>
+          <div class="spectrogram-bars-grid" id="spectrogramGrid">
+            <!-- 20 Spectrogram Bars -->
+          </div>
+          <div class="freq-axis-labels font-mono text-xs text-muted">
+            <span>0 Hz</span>
+            <span>2,000 Hz</span>
+            <span>4,000 Hz</span>
+            <span>8,000 Hz</span>
+          </div>
+        </div>
+
+        <!-- Telemetry Metrics Table -->
+        <div class="metrics-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="metric_col">Acoustic Parameter</th>
+                <th data-i18n="value_col">Observed Value</th>
+                <th data-i18n="unit_col">Standard</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Recording Duration</td>
+                <td class="font-mono tabular-nums" id="metricDuration">-</td>
+                <td class="font-mono text-xs text-muted">Seconds</td>
+              </tr>
+              <tr>
+                <td>Dominant Frequency</td>
+                <td class="font-mono tabular-nums" id="metricDomFreq">-</td>
+                <td class="font-mono text-xs text-muted">Hertz (Hz)</td>
+              </tr>
+              <tr>
+                <td>Spectral Centroid</td>
+                <td class="font-mono tabular-nums" id="metricCentroid">-</td>
+                <td class="font-mono text-xs text-muted">Hertz (Hz)</td>
+              </tr>
+              <tr>
+                <td>Sampling Rate</td>
+                <td class="font-mono tabular-nums" id="metricSamplingRate">-</td>
+                <td class="font-mono text-xs text-muted">Samples/sec</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Clinical Safety Box -->
+        <div class="alert-box alert-neutral mt-4">
+          <strong data-i18n="clinical_disclosure_title">Clinical Disclosure:</strong>
+          <p class="text-xs text-muted" id="respClinicalDisclaimer">-</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const audioFileInput = document.getElementById('audioFileInput');
+  const audioDropZone = document.getElementById('audioDropZone');
+  const playerContainer = document.getElementById('audioPlayerContainer');
+  const audioPlayer = document.getElementById('audioPlayer');
+  const clearAudioBtn = document.getElementById('clearAudioBtn');
+  const respUploadForm = document.getElementById('respUploadForm');
+  const respEmpty = document.getElementById('respResultsEmpty');
+  const respLoading = document.getElementById('respLoading');
+  const respContent = document.getElementById('respResultsContent');
+
+  audioDropZone.addEventListener('click', () => audioFileInput.click());
+  audioFileInput.addEventListener('change', () => handleAudio(audioFileInput.files[0]));
+
+  audioDropZone.addEventListener('dragover', (e) => { e.preventDefault(); audioDropZone.classList.add('dragover'); });
+  audioDropZone.addEventListener('dragleave', () => audioDropZone.classList.remove('dragover'));
+  audioDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    audioDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleAudio(e.dataTransfer.files[0]);
+  });
+
+  function handleAudio(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    audioPlayer.src = url;
+    audioDropZone.classList.add('hidden');
+    playerContainer.classList.remove('hidden');
+  }
+
+  clearAudioBtn.addEventListener('click', () => {
+    audioFileInput.value = '';
+    audioPlayer.src = '';
+    playerContainer.classList.add('hidden');
+    audioDropZone.classList.remove('hidden');
+    respContent.classList.add('hidden');
+    respEmpty.classList.remove('hidden');
+  });
+
+  respUploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = audioFileInput.files[0];
+    if (!file) return;
+
+    respEmpty.classList.add('hidden');
+    respContent.classList.add('hidden');
+    respLoading.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('audio', file);
+    formData.append('language', document.documentElement.lang || 'en');
+
+    try {
+      const res = await fetch('/api/respiratory/analyze', { method: 'POST', body: formData });
+      const data = await res.json();
+      respLoading.classList.add('hidden');
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to analyze respiratory recording.');
+        respEmpty.classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('respPrimaryTitle').textContent = data.title;
+      document.getElementById('respConfidence').textContent = data.confidence;
+      document.getElementById('respDescription').textContent = data.description;
+      document.getElementById('dominantFreqLabel').textContent = `Peak: ${data.metrics.dominant_frequency_hz} Hz`;
+      document.getElementById('metricDuration').textContent = data.metrics.duration_sec;
+      document.getElementById('metricDomFreq').textContent = data.metrics.dominant_frequency_hz;
+      document.getElementById('metricCentroid').textContent = data.metrics.spectral_centroid_hz;
+      document.getElementById('metricSamplingRate').textContent = data.metrics.sample_rate_hz;
+      document.getElementById('respClinicalDisclaimer').textContent = data.clinical_disclaimer;
+
+      // Render 20-band spectrogram
+      const grid = document.getElementById('spectrogramGrid');
+      grid.innerHTML = '';
+      if (data.spectrogram_preview) {
+        data.spectrogram_preview.forEach((val) => {
+          const bar = document.createElement('div');
+          bar.className = 'spec-bar';
+          const heightPct = Math.max(10, Math.min(100, Math.round(val * 100)));
+          bar.style.height = `${heightPct}%`;
+          grid.appendChild(bar);
+        });
+      }
+
+      respContent.classList.remove('hidden');
+    } catch (err) {
+      respLoading.classList.add('hidden');
+      respEmpty.classList.remove('hidden');
+      alert('Error communicating with respiratory analysis service.');
+    }
+  });
+
+  // Synthetic Audio Tone Generators
+  function generateSyntheticAudioWav(frequency, type) {
+    const sr = 16000;
+    const duration = 4.0;
+    const numSamples = Math.floor(sr * duration);
+    const buffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buffer);
+
+    // Write WAV header
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + numSamples * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, 1, true); // Mono
+    view.setUint32(24, sr, true);
+    view.setUint32(28, sr * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, numSamples * 2, true);
+
+    // Audio samples
+    for (let i = 0; i < numSamples; i++) {
+      const t = i / sr;
+      let s = 0;
+      if (type === 'wheeze') {
+        s = 0.5 * Math.sin(2 * Math.PI * frequency * t) + 0.1 * Math.sin(2 * Math.PI * 840 * t);
+      } else if (type === 'crackle') {
+        const isBurst = (i % (sr * 0.4)) < 200;
+        s = isBurst ? 0.7 * (Math.random() * 2 - 1) : 0.05 * (Math.random() * 2 - 1);
+      } else {
+        s = 0.3 * Math.sin(2 * Math.PI * 150 * t) + 0.05 * (Math.random() * 2 - 1);
+      }
+      view.setInt16(44 + i * 2, Math.floor(s * 32767), true);
+    }
+
+    const blob = new Blob([buffer], { type: 'audio/wav' });
+    const file = new File([blob], `synthetic_${type}.wav`, { type: 'audio/wav' });
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    audioFileInput.files = dt.files;
+    handleAudio(file);
+  }
+
+  function writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+
+  document.getElementById('loadSampleWheeze').addEventListener('click', () => generateSyntheticAudioWav(420, 'wheeze'));
+  document.getElementById('loadSampleCrackle').addEventListener('click', () => generateSyntheticAudioWav(800, 'crackle'));
+  document.getElementById('loadSampleNormal').addEventListener('click', () => generateSyntheticAudioWav(150, 'normal'));
+</script>
+{% endblock %}

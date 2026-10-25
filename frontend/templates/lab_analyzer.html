@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Laboratory Report Analyzer — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_lab">Lab Reports</span>
+    </div>
+    <h1 class="page-title" data-i18n="mod_lab_title">Laboratory Report OCR &amp; Analyzer</h1>
+    <p class="page-subtitle" data-i18n="lab_subtitle">
+      Automated extraction of complete blood counts, metabolic panels, and thyroid metrics from English and Arabic clinical sheets.
+    </p>
+  </div>
+
+  <div class="analyzer-two-col-grid">
+    <!-- Left: Upload, Text Entry & Quick Synthetic Presets -->
+    <div class="surface-card">
+      <h2 class="card-heading" data-i18n="lab_upload_heading">Submit Medical Report</h2>
+      
+      <!-- Input Mode Switcher (File vs Text) -->
+      <div class="tab-control-strip mb-4">
+        <button type="button" class="tab-btn active" id="tabModeFile" data-i18n="tab_file_upload">Upload Scanned Document</button>
+        <button type="button" class="tab-btn" id="tabModeText" data-i18n="tab_direct_text">Paste Digital Text</button>
+      </div>
+
+      <!-- File Upload Pane -->
+      <form id="labFileForm" class="upload-zone-form">
+        <div class="drop-zone" id="docDropZone">
+          <input type="file" id="docFileInput" accept="image/jpeg,image/png,application/pdf" class="file-input-hidden" />
+          <div class="drop-zone-content">
+            <span class="drop-icon">📄</span>
+            <strong data-i18n="drop_doc_prompt">Click to select or drop lab report (PDF, PNG, JPG)</strong>
+            <span class="file-specs font-mono text-xs text-muted">Up to 16 MB · Safe multi-page PDF &amp; image OCR</span>
+          </div>
+        </div>
+
+        <div id="fileSelectedDisplay" class="file-selected-box hidden mt-3">
+          <span class="font-mono text-xs" id="selectedFileName">report.pdf</span>
+          <button type="button" id="clearFileBtn" class="text-xs text-danger font-medium">Remove</button>
+        </div>
+
+        <button type="submit" id="runFileOcrBtn" class="btn-primary w-full mt-3" data-i18n="btn_run_ocr">Run Local OCR Pipeline</button>
+      </form>
+
+      <!-- Direct Text Entry Pane -->
+      <form id="labTextForm" class="hidden mt-2">
+        <textarea 
+          id="directTextInput" 
+          class="raw-text-area" 
+          rows="10" 
+          placeholder="Paste printed laboratory results here (e.g. Hemoglobin 14.2 g/dL 13.5 - 17.5)..."
+        ></textarea>
+        <button type="submit" class="btn-primary w-full mt-3" data-i18n="btn_parse_text">Parse Laboratory Text</button>
+      </form>
+
+      <!-- Quick Synthetic Report Loaders -->
+      <div class="sample-picker-strip mt-4">
+        <span class="picker-label font-mono text-xs" data-i18n="synthetic_reports_label">Load synthetic test fixtures:</span>
+        <div class="sample-btns-row">
+          <button type="button" class="btn-sample" id="loadSampleEnBtn">Synthetic Report (English)</button>
+          <button type="button" class="btn-sample" id="loadSampleArBtn">تقرير اصطناعي (العربية)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Extracted Lab Results Table -->
+    <div class="surface-card" id="labResultsCard">
+      <div class="results-header-row">
+        <h2 class="card-heading" data-i18n="lab_results_heading">Parsed Test Results</h2>
+        <div class="ocr-status-tag font-mono text-xs" id="ocrConfidenceTag">Confidence: -</div>
+      </div>
+
+      <div id="labResultsEmpty" class="empty-state-placeholder">
+        <p class="text-muted" data-i18n="lab_empty_state">Upload a scanned report or load a synthetic fixture to parse tests, reference ranges, and abnormal flags.</p>
+      </div>
+
+      <div id="labLoading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p class="text-muted" data-i18n="lab_processing">Enhancing image contrast, executing Tesseract OCR, and structuring laboratory tests...</p>
+      </div>
+
+      <div id="labResultsContent" class="results-data-wrapper hidden">
+        <!-- Out-of-range Warning Strip -->
+        <div id="abnormalSummaryBox" class="alert-box alert-warning">
+          <strong id="abnormalCountLabel">0 Abnormal Test Results Detected</strong>
+          <span class="text-xs text-muted block mt-1" data-i18n="review_prompt">Please verify flagged results with the original laboratory document.</span>
+        </div>
+
+        <!-- Parsed Data Table -->
+        <div class="table-responsive-container mt-3">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="col_test">Analyte / Test Name</th>
+                <th data-i18n="col_val">Observed</th>
+                <th data-i18n="col_unit">Unit</th>
+                <th data-i18n="col_ref">Reference Interval</th>
+                <th data-i18n="col_flag">Status</th>
+              </tr>
+            </thead>
+            <tbody id="labTableBody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Raw Text Collapsible Drawer -->
+        <details class="raw-text-drawer mt-4">
+          <summary class="drawer-trigger font-mono text-xs" data-i18n="raw_extracted_text">View Raw OCR Text Stream</summary>
+          <pre class="raw-pre-box font-mono text-xs" id="rawOcrPreBox"></pre>
+        </details>
+
+        <!-- Clinical Safety Box -->
+        <div class="alert-box alert-neutral mt-4">
+          <strong data-i18n="clinical_disclosure_title">Clinical Disclosure:</strong>
+          <p class="text-xs text-muted" id="labClinicalDisclaimer">-</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tabModeFile = document.getElementById('tabModeFile');
+  const tabModeText = document.getElementById('tabModeText');
+  const labFileForm = document.getElementById('labFileForm');
+  const labTextForm = document.getElementById('labTextForm');
+  const docFileInput = document.getElementById('docFileInput');
+  const docDropZone = document.getElementById('docDropZone');
+  const fileSelectedDisplay = document.getElementById('fileSelectedDisplay');
+  const selectedFileName = document.getElementById('selectedFileName');
+  const clearFileBtn = document.getElementById('clearFileBtn');
+  const directTextInput = document.getElementById('directTextInput');
+
+  const labResultsEmpty = document.getElementById('labResultsEmpty');
+  const labLoading = document.getElementById('labLoading');
+  const labResultsContent = document.getElementById('labResultsContent');
+  const labTableBody = document.getElementById('labTableBody');
+  const ocrConfidenceTag = document.getElementById('ocrConfidenceTag');
+  const abnormalSummaryBox = document.getElementById('abnormalSummaryBox');
+  const abnormalCountLabel = document.getElementById('abnormalCountLabel');
+  const rawOcrPreBox = document.getElementById('rawOcrPreBox');
+  const labClinicalDisclaimer = document.getElementById('labClinicalDisclaimer');
+
+  // Tab switching
+  tabModeFile.addEventListener('click', () => {
+    tabModeFile.classList.add('active');
+    tabModeText.classList.remove('active');
+    labFileForm.classList.remove('hidden');
+    labTextForm.classList.add('hidden');
+  });
+
+  tabModeText.addEventListener('click', () => {
+    tabModeText.classList.add('active');
+    tabModeFile.classList.remove('active');
+    labTextForm.classList.remove('hidden');
+    labFileForm.classList.add('hidden');
+  });
+
+  docDropZone.addEventListener('click', () => docFileInput.click());
+  docFileInput.addEventListener('change', () => {
+    if (docFileInput.files.length) {
+      selectedFileName.textContent = docFileInput.files[0].name;
+      fileSelectedDisplay.classList.remove('hidden');
+    }
+  });
+
+  clearFileBtn.addEventListener('click', () => {
+    docFileInput.value = '';
+    fileSelectedDisplay.classList.add('hidden');
+  });
+
+  // Handle File Submit
+  labFileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!docFileInput.files.length) {
+      alert('Please select a file or use the synthetic test buttons.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('document', docFileInput.files[0]);
+    formData.append('language', document.documentElement.lang || 'en');
+    executeAnalysis(formData);
+  });
+
+  // Handle Direct Text Submit
+  labTextForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = directTextInput.value.trim();
+    if (!text) return;
+    const formData = new FormData();
+    formData.append('direct_text', text);
+    formData.append('language', document.documentElement.lang || 'en');
+    executeAnalysis(formData);
+  });
+
+  async function executeAnalysis(formData) {
+    labResultsEmpty.classList.add('hidden');
+    labResultsContent.classList.add('hidden');
+    labLoading.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/api/lab/analyze', { method: 'POST', body: formData });
+      const data = await res.json();
+      labLoading.classList.add('hidden');
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to process report.');
+        labResultsEmpty.classList.remove('hidden');
+        return;
+      }
+
+      renderReportData(data);
+    } catch (err) {
+      labLoading.classList.add('hidden');
+      labResultsEmpty.classList.remove('hidden');
+      alert('Network or processing error during laboratory analysis.');
+    }
+  }
+
+  function renderReportData(data) {
+    ocrConfidenceTag.textContent = `Confidence: ${data.ocr_confidence}%`;
+    abnormalCountLabel.textContent = `${data.abnormal_count} Flagged Result(s) Outside Normal Boundaries`;
+    rawOcrPreBox.textContent = data.raw_text;
+    labClinicalDisclaimer.textContent = data.clinical_disclaimer;
+
+    labTableBody.innerHTML = '';
+    if (data.parsed_tests && data.parsed_tests.length > 0) {
+      data.parsed_tests.forEach((t) => {
+        const tr = document.createElement('tr');
+        if (t.flag !== 'NORMAL') tr.className = 'row-flagged';
+        tr.innerHTML = `
+          <td class="font-medium">${escapeHtml(t.test_name)}</td>
+          <td class="font-mono tabular-nums font-semibold">${t.value}</td>
+          <td class="font-mono text-xs text-muted">${escapeHtml(t.unit)}</td>
+          <td class="font-mono text-xs">${escapeHtml(t.reference_interval)}</td>
+          <td>
+            <span class="status-tag status-${t.flag.toLowerCase()} font-mono text-xs">
+              ${t.flag}
+            </span>
+          </td>
+        `;
+        labTableBody.appendChild(tr);
+      });
+    } else {
+      labTableBody.innerHTML = `<tr><td colspan="5" class="text-muted text-center py-4">No standardized laboratory values could be parsed. Check raw text.</td></tr>`;
+    }
+
+    labResultsContent.classList.remove('hidden');
+  }
+
+  // Load Synthetic Fixtures
+  document.getElementById('loadSampleEnBtn').addEventListener('click', async () => {
+    tabModeText.click();
+    const res = await fetch('/api/lab/sample?lang=en');
+    const data = await res.json();
+    directTextInput.value = data.content;
+    const fd = new FormData();
+    fd.append('direct_text', data.content);
+    fd.append('language', 'en');
+    executeAnalysis(fd);
+  });
+
+  document.getElementById('loadSampleArBtn').addEventListener('click', async () => {
+    tabModeText.click();
+    const res = await fetch('/api/lab/sample?lang=ar');
+    const data = await res.json();
+    directTextInput.value = data.content;
+    const fd = new FormData();
+    fd.append('direct_text', data.content);
+    fd.append('language', 'ar');
+    executeAnalysis(fd);
+  });
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+{% endblock %}

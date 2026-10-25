@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Skin Lesion Analyzer — AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="workspace-container">
+  <div class="workspace-header">
+    <div class="header-breadcrumbs">
+      <a href="/" data-i18n="nav_dashboard">Dashboard</a> / <span data-i18n="nav_skin">Skin Analyzer</span>
+    </div>
+    <h1 class="page-title" data-i18n="mod_skin_title">Skin Lesion Analyzer</h1>
+    <p class="page-subtitle" data-i18n="skin_subtitle">
+      Dermatoscopic lesion classification evaluated against the 7 standardized HAM10000 / ISIC diagnostic classes.
+    </p>
+  </div>
+
+  <div class="analyzer-two-col-grid">
+    <!-- Left: Upload & Preview Card -->
+    <div class="surface-card">
+      <h2 class="card-heading" data-i18n="skin_upload_heading">Dermoscopic Image Upload</h2>
+      <p class="card-subtext" data-i18n="skin_upload_subtext">
+        Upload a high-resolution dermatoscopic photograph (JPEG, PNG). For highest reliability, use calibrated epiluminescence microscopy images.
+      </p>
+
+      <form id="skinUploadForm" class="upload-zone-form">
+        <div class="drop-zone" id="skinDropZone">
+          <input type="file" id="skinFileInput" accept="image/jpeg,image/png,image/webp" class="file-input-hidden" />
+          <div class="drop-zone-content">
+            <span class="drop-icon">📷</span>
+            <strong data-i18n="drop_zone_prompt">Click to select or drag &amp; drop skin image</strong>
+            <span class="file-specs font-mono text-xs text-muted">JPG, PNG up to 16 MB · 224x224 RGB input</span>
+          </div>
+        </div>
+
+        <div id="imagePreviewContainer" class="image-preview-wrapper hidden">
+          <img id="skinImagePreview" src="" alt="Skin Lesion Preview" class="preview-img" />
+          <div class="preview-actions">
+            <button type="button" id="clearImageBtn" class="btn-secondary" data-i18n="btn_clear_image">Remove Image</button>
+            <button type="submit" id="analyzeSkinBtn" class="btn-primary" data-i18n="btn_run_skin_analysis">Execute Lesion Analysis</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Pre-loaded Samples -->
+      <div class="sample-picker-strip">
+        <span class="picker-label font-mono text-xs" data-i18n="sample_picker_label">Or test with synthetic sample:</span>
+        <button type="button" class="btn-sample" id="loadSampleNeviBtn" data-i18n="sample_nevi">Sample Nevus (Benign)</button>
+        <button type="button" class="btn-sample" id="loadSampleMelanomaBtn" data-i18n="sample_mel">Sample Melanoma</button>
+      </div>
+    </div>
+
+    <!-- Right: Prediction Results Card -->
+    <div class="surface-card" id="skinResultsCard">
+      <h2 class="card-heading" data-i18n="skin_results_heading">Analysis &amp; Diagnostic Tiers</h2>
+      
+      <div id="skinResultsEmpty" class="empty-state-placeholder">
+        <p class="text-muted" data-i18n="skin_empty_state">Submit an image to inspect class probabilities, dermoscopic domain validation, and risk tiers.</p>
+      </div>
+
+      <div id="skinLoading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p class="text-muted" data-i18n="skin_analyzing">Normalizing image tensor &amp; executing model inference...</p>
+      </div>
+
+      <div id="skinResultsContent" class="results-data-wrapper hidden">
+        <!-- Top Prediction Badge -->
+        <div class="primary-result-box">
+          <div class="result-top-row">
+            <div>
+              <span class="font-mono text-xs text-muted" data-i18n="primary_finding_label">PRIMARY CLASSIFICATION:</span>
+              <h3 class="primary-title" id="primaryClassName">-</h3>
+            </div>
+            <div class="confidence-badge">
+              <span class="conf-num font-mono" id="primaryConfidence">-</span>%
+            </div>
+          </div>
+          <p class="result-description" id="primaryClassDesc">-</p>
+        </div>
+
+        <!-- Domain Shift Warning Alert -->
+        <div id="domainWarningBox" class="alert-box alert-warning hidden">
+          <strong>Notice:</strong> <span id="domainWarningText"></span>
+        </div>
+
+        <!-- 7 Class Probability Bars -->
+        <div class="class-distribution-group">
+          <h4 class="group-title font-mono text-xs" data-i18n="all_classes_heading">ISIC 7-CLASS PROBABILITY DISTRIBUTION</h4>
+          <div id="classListContainer" class="class-bars-list">
+            <!-- Dynamic Class Bars -->
+          </div>
+        </div>
+
+        <!-- Clinical Safety Box -->
+        <div class="alert-box alert-neutral mt-4">
+          <strong data-i18n="clinical_disclosure_title">Clinical Disclosure:</strong>
+          <p class="text-xs text-muted" id="skinClinicalDisclaimer">-</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const fileInput = document.getElementById('skinFileInput');
+  const dropZone = document.getElementById('skinDropZone');
+  const previewContainer = document.getElementById('imagePreviewContainer');
+  const imgPreview = document.getElementById('skinImagePreview');
+  const clearBtn = document.getElementById('clearImageBtn');
+  const uploadForm = document.getElementById('skinUploadForm');
+  const resultsEmpty = document.getElementById('skinResultsEmpty');
+  const resultsLoading = document.getElementById('skinLoading');
+  const resultsContent = document.getElementById('skinResultsContent');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imgPreview.src = e.target.result;
+      dropZone.classList.add('hidden');
+      previewContainer.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearBtn.addEventListener('click', () => {
+    fileInput.value = '';
+    imgPreview.src = '';
+    previewContainer.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    resultsContent.classList.add('hidden');
+    resultsEmpty.classList.remove('hidden');
+  });
+
+  uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    resultsEmpty.classList.add('hidden');
+    resultsContent.classList.add('hidden');
+    resultsLoading.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('language', document.documentElement.lang || 'en');
+
+    try {
+      const res = await fetch('/api/skin/analyze', { method: 'POST', body: formData });
+      const data = await res.json();
+      resultsLoading.classList.add('hidden');
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to analyze skin image.');
+        resultsEmpty.classList.remove('hidden');
+        return;
+      }
+
+      // Populate results
+      document.getElementById('primaryClassName').textContent = data.primary_class.toUpperCase();
+      document.getElementById('primaryConfidence').textContent = data.primary_confidence;
+      document.getElementById('primaryClassDesc').textContent = data.predictions[0].description;
+      document.getElementById('skinClinicalDisclaimer').textContent = data.clinical_disclaimer;
+
+      const warningBox = document.getElementById('domainWarningBox');
+      if (data.warnings && data.warnings.length > 0) {
+        warningBox.classList.remove('hidden');
+        document.getElementById('domainWarningText').textContent = data.warnings[0];
+      } else {
+        warningBox.classList.add('hidden');
+      }
+
+      // Populate all classes
+      const container = document.getElementById('classListContainer');
+      container.innerHTML = '';
+      data.predictions.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'class-row';
+        row.innerHTML = `
+          <div class="row-label">
+            <span class="font-mono text-xs uppercase">${p.class_code}</span>
+            <span class="text-xs text-muted truncate">${p.description}</span>
+          </div>
+          <div class="row-bar-track">
+            <div class="row-bar-fill" style="width: ${p.confidence}%"></div>
+          </div>
+          <span class="row-val font-mono text-xs">${p.confidence}%</span>
+        `;
+        container.appendChild(row);
+      });
+
+      resultsContent.classList.remove('hidden');
+    } catch (err) {
+      resultsLoading.classList.add('hidden');
+      resultsEmpty.classList.remove('hidden');
+      alert('Network or processing error during skin analysis.');
+    }
+  });
+
+  // Synthetic sample generators
+  document.getElementById('loadSampleNeviBtn').addEventListener('click', () => {
+    createSyntheticCanvasSample('#8B5A2B', false);
+  });
+  document.getElementById('loadSampleMelanomaBtn').addEventListener('click', () => {
+    createSyntheticCanvasSample('#2B1A09', true);
+  });
+
+  function createSyntheticCanvasSample(centerColor, isIrregular) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 224;
+    canvas.height = 224;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw background
+    ctx.fillStyle = '#E8C5A8';
+    ctx.fillRect(0, 0, 224, 224);
+
+    // Draw lesion center
+    ctx.fillStyle = centerColor;
+    ctx.beginPath();
+    ctx.ellipse(112, 112, isIrregular ? 45 : 35, isIrregular ? 30 : 35, isIrregular ? 0.4 : 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    canvas.toBlob((blob) => {
+      const file = new File([blob], isIrregular ? "sample_melanoma_synthetic.png" : "sample_nevus_synthetic.png", { type: "image/png" });
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      handleFile(file);
+    });
+  }
+</script>
+{% endblock %}

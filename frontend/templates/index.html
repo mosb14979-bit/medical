@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — AI Medical Assistant (AMA){% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+  <!-- Hero Section -->
+  <section class="dashboard-hero">
+    <div class="hero-header">
+      <h1 class="hero-title" data-i18n="hero_title">Clinical Information &amp; Research Workspace</h1>
+      <p class="hero-description" data-i18n="hero_desc">
+        A local-first medical informatics suite providing evidence-grounded medical Q&amp;A, dermoscopic lesion classification, respiratory auscultation analysis, and bilingual laboratory OCR.
+      </p>
+    </div>
+
+    <!-- Live System Telemetry Banner -->
+    <div class="system-status-card" id="systemStatusCard">
+      <div class="status-indicator-group">
+        <span class="status-dot-active">●</span>
+        <span class="status-label" id="statusSummary" data-i18n="sys_inspecting">Inspecting local environment...</span>
+      </div>
+      <div class="status-details font-mono text-xs text-muted" id="statusDetails">
+        Checking SQLite · PyTorch · Tesseract OCR
+      </div>
+    </div>
+  </section>
+
+  <!-- Module Cards Grid (4 Core Analyzers) -->
+  <section class="modules-grid">
+    <!-- Module 1: Chatbot -->
+    <a href="/chatbot" class="module-card">
+      <div class="module-header">
+        <span class="module-icon">💬</span>
+        <h2 class="module-title" data-i18n="mod_chatbot_title">Medical Chatbot</h2>
+      </div>
+      <p class="module-desc" data-i18n="mod_chatbot_desc">
+        Evidence-based retrieval from MedlinePlus and WHO. Real citation tracking, clinical term explanation, and emergency triage screening.
+      </p>
+      <div class="module-footer">
+        <span class="module-action-link" data-i18n="action_launch">Launch Module →</span>
+        <span class="module-meta font-mono text-xs">RAG · Bilingual</span>
+      </div>
+    </a>
+
+    <!-- Module 2: Skin Analyzer -->
+    <a href="/skin-analyzer" class="module-card">
+      <div class="module-header">
+        <span class="module-icon">🔬</span>
+        <h2 class="module-title" data-i18n="mod_skin_title">Skin Lesion Analyzer</h2>
+      </div>
+      <p class="module-desc" data-i18n="mod_skin_desc">
+        HAM10000 7-class dermatoscopic evaluation (Melanoma, Basal Cell Carcinoma, Nevi). Includes smartphone camera domain shift warnings.
+      </p>
+      <div class="module-footer">
+        <span class="module-action-link" data-i18n="action_launch">Launch Module →</span>
+        <span class="module-meta font-mono text-xs">ISIC · 224x224 CNN</span>
+      </div>
+    </a>
+
+    <!-- Module 3: Respiratory Analyzer -->
+    <a href="/respiratory-analyzer" class="module-card">
+      <div class="module-header">
+        <span class="module-icon">🫁</span>
+        <h2 class="module-title" data-i18n="mod_resp_title">Respiratory Sound Analyzer</h2>
+      </div>
+      <p class="module-desc" data-i18n="mod_resp_desc">
+        ICBHI 2017 auscultation sound classifier. Detects wheezes, crackles, and stridor with log-Mel spectrogram visual analysis.
+      </p>
+      <div class="module-footer">
+        <span class="module-action-link" data-i18n="action_launch">Launch Module →</span>
+        <span class="module-meta font-mono text-xs">DSP · 5 Classes</span>
+      </div>
+    </a>
+
+    <!-- Module 4: Laboratory Analyzer -->
+    <a href="/lab-analyzer" class="module-card">
+      <div class="module-header">
+        <span class="module-icon">📋</span>
+        <h2 class="module-title" data-i18n="mod_lab_title">Laboratory Report OCR</h2>
+      </div>
+      <p class="module-desc" data-i18n="mod_lab_desc">
+        Bilingual English &amp; Arabic OCR engine for blood panels and metabolic reports. Extracts values, units, reference intervals, and flags out-of-range metrics.
+      </p>
+      <div class="module-footer">
+        <span class="module-action-link" data-i18n="action_launch">Launch Module →</span>
+        <span class="module-meta font-mono text-xs">Tesseract · Regex NLP</span>
+      </div>
+    </a>
+  </section>
+
+  <!-- Quick Start & Windows 11 Deployment Section -->
+  <section class="deployment-guide-card">
+    <div class="guide-header">
+      <h3 class="guide-title" data-i18n="win_deploy_title">Windows 11 Local Deployment</h3>
+      <span class="guide-tag font-mono text-xs">SETUP.bat · RUN.bat</span>
+    </div>
+    <div class="guide-steps">
+      <div class="step-item">
+        <div class="step-num font-mono">01</div>
+        <div class="step-text">
+          <strong data-i18n="step1_title">Clone &amp; Extract</strong>
+          <p data-i18n="step1_desc">Download repository to Windows 11 laptop.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num font-mono">02</div>
+        <div class="step-text">
+          <strong data-i18n="step2_title">Run SETUP.bat</strong>
+          <p data-i18n="step2_desc">Automated virtualenv creation, pip dependency installation &amp; OCR verification.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num font-mono">03</div>
+        <div class="step-text">
+          <strong data-i18n="step3_title">Run RUN.bat</strong>
+          <p data-i18n="step3_desc">Spins up local Flask server on 127.0.0.1:5000 and opens default browser.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/api/system/status');
+      if (res.ok) {
+        const data = await res.json();
+        const summary = document.getElementById('statusSummary');
+        const details = document.getElementById('statusDetails');
+        if (summary && details) {
+          summary.textContent = `AMA Local Server Operational (${data.os.system} ${data.os.machine})`;
+          details.textContent = `Python ${data.os.python_version} · PyTorch: ${data.torch.installed ? 'Installed (' + data.torch.device_name + ')' : 'CPU Mode'} · OCR: ${data.ocr.status}`;
+        }
+      }
+    } catch (e) {
+      console.log('Telemetry note:', e);
+    }
+  });
+</script>
+{% endblock %}
